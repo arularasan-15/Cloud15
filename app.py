@@ -1,39 +1,39 @@
 import streamlit as st
-import pickle
-import numpy as np
 import pandas as pd
+from sklearn.linear_model import LinearRegression
 
-# Load model
-model = pickle.load(open("model.pkl", "rb"))
+# Dataset
+data = {
+    "hours": [1,2,3,4,5,6,7,8,9,10],
+    "attendance": [50,55,60,65,70,75,80,85,90,95],
+    "marks": [30,35,40,45,50,60,65,70,75,85]
+}
 
-st.set_page_config(page_title="Student Predictor", layout="centered")
+df = pd.DataFrame(data)
 
-st.title(" Student Performance Predictor")
+# Train model
+X = df[["hours", "attendance"]]
+y = df["marks"]
 
-st.write("Enter student details to predict marks")
+model = LinearRegression()
+model.fit(X, y)
 
-# Inputs
-hours = st.slider("Study Hours per Day", 0, 12, 5)
-attendance = st.slider("Attendance (%)", 0, 100, 75)
+# Streamlit UI
+st.title("🎓 Student Performance Predictor")
 
-# Predict
-if st.button("Predict Marks"):
+st.write("Enter student details")
+
+hours = st.slider("Study Hours", 0, 12, 5)
+attendance = st.slider("Attendance Percentage", 0, 100, 75)
+
+if st.button("Predict"):
     prediction = model.predict([[hours, attendance]])
-    marks = round(prediction[0], 2)
 
-    st.success(f" Predicted Marks: {marks}")
+    st.success(f"Predicted Marks: {prediction[0]:.2f}")
 
-    # Grade logic
-    if marks >= 75:
-        st.info("Grade: A 🟢 Excellent")
-    elif marks >= 50:
-        st.info("Grade: B 🟡 Good")
+    if prediction[0] >= 75:
+        st.info("Grade: A")
+    elif prediction[0] >= 50:
+        st.info("Grade: B")
     else:
-        st.warning("Grade: C  Needs Improvement")
-
-    # Simple chart
-    chart_data = pd.DataFrame({
-        "Category": ["Study Hours", "Attendance", "Marks"],
-        "Value": [hours, attendance, marks]
-    })
-    st.bar_chart(chart_data.set_index("Category"))
+        st.warning("Grade: C")
